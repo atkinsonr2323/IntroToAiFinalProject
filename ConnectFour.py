@@ -19,7 +19,6 @@ class Connect4:
 
     def get_column(self):
         if self.current_player == 1:
-            # Human player
             while True:
                 try:
                     column = int(input(f'Player {self.current_player}, choose a column (1-7): ')) - 1
@@ -33,7 +32,7 @@ class Connect4:
                     print('Invalid input. Please enter a number between 1 and 7.')
         else:
             # AI player
-            _, column = self.minimax(self.board, DEPTH_LIMIT, True)
+            score, column = self.minimax(self.board, DEPTH_LIMIT, True)
             return column
 
     def make_move(self, column):
@@ -71,12 +70,12 @@ class Connect4:
 
         return False
 
-    # TYPE 1 completely random (not optimal by any means but quick)x
+    # Completely random
     def rand_ai_move(self):
         valid_moves = [i for i in range(7) if self.board[0][i] == ' ']
         return random.choice(valid_moves)
 
-# Extremely simple evaluation that checks for a possible 4 in a row (if it doesn't know what to do place in first
+    # Extremely simple evaluation that checks for a possible 4 in a row (if it doesn't know what to do place in first
     # possible spot)
     def evaluate_easy(self, board):
         if self.current_player == 2 and self.check_win():
@@ -106,8 +105,7 @@ class Connect4:
 
         for col in range(len(board[0])):
             for i in range(len(board) - 3):
-                if board[i][col] == board[i + 1][col] == board[i + 2][col] == board[i + 3][col] and board[i][
-                    col] != ' ':
+                if board[i][col] == board[i + 1][col] == board[i + 2][col] == board[i + 3][col] and board[i][col] != ' ':
                     if board[i][col] == 'O':
                         return -100
                     else:
@@ -125,7 +123,6 @@ class Connect4:
                                                                                    range(i, i + 4)].count(' ') == 2:
                     score -= 10
 
-        # Check for diagonal wins (top-left to bottom-right)
         for row in range(len(board) - 3):
             for col in range(len(board[0]) - 3):
                 if board[row][col] == board[row + 1][col + 1] == board[row + 2][col + 2] == board[row + 3][col + 3] and \
@@ -136,14 +133,16 @@ class Connect4:
                         return 100
                 if [board[row + j][col + j] for j in range(4)].count('O') == 3 and [board[row + j][col + j] for j in
                                                                                     range(4)].count(' ') == 1:
-                        score += 50
+                    score += 50
                 elif [board[row + j][col + j] for j in range(4)].count('X') == 3 and [board[row + j][col + j] for j
-                                                                                          in range(4)].count(' ') == 1:
-                        score -= 50
-                elif [board[row+j][col+j] for j in range(4)].count('O') == 2 and [board[row+j][col+j] for j in range(4)].count(' ') == 2:
-                        score += 10
-                elif [board[row+j][col+j] for j in range(4)].count('X') == 2 and [board[row+j][col+j] for j in range(4)].count(' ') == 2:
-                        score -= 10
+                                                                                      in range(4)].count(' ') == 1:
+                    score -= 50
+                elif [board[row + j][col + j] for j in range(4)].count('O') == 2 and [board[row + j][col + j] for j in
+                                                                                      range(4)].count(' ') == 2:
+                    score += 10
+                elif [board[row + j][col + j] for j in range(4)].count('X') == 2 and [board[row + j][col + j] for j in
+                                                                                      range(4)].count(' ') == 2:
+                    score -= 10
                 for row in range(3, len(board)):
                     for col in range(len(board[0]) - 3):
                         if board[row][col] == board[row - 1][col + 1] == board[row - 2][col + 2] == board[row - 3][
@@ -153,20 +152,89 @@ class Connect4:
                                 return -100
                             else:
                                 return 100
-                        if [board[row - j][col + j] for j in range(4)].count('O') == 3 and [board[row - j][col + j] for j in
-                                                                                                range(4)].count(' ') == 1:
-                                score += 50
-                        elif [board[row - j][col + j] for j in range(4)].count('X') == 3 and [board[row - j][col + j] for j in
+                        if [board[row - j][col + j] for j in range(4)].count('O') == 3 and [board[row - j][col + j] for
+                                                                                            j in
+                                                                                            range(4)].count(' ') == 1:
+                            score += 50
+                        elif [board[row - j][col + j] for j in range(4)].count('X') == 3 and [board[row - j][col + j]
+                                                                                              for j in
                                                                                               range(4)].count(' ') == 1:
-                                score -= 50
-                        elif [board[row - j][col + j] for j in range(4)].count('O') == 2 and [board[row - j][col + j] for j in
+                            score -= 50
+                        elif [board[row - j][col + j] for j in range(4)].count('O') == 2 and [board[row - j][col + j]
+                                                                                              for j in
                                                                                               range(4)].count(' ') == 2:
-                                score += 10
-                        elif [board[row - j][col + j] for j in range(4)].count('X') == 2 and [board[row - j][col + j] for j in
+                            score += 10
+                        elif [board[row - j][col + j] for j in range(4)].count('X') == 2 and [board[row - j][col + j]
+                                                                                              for j in
                                                                                               range(4)].count(' ') == 2:
-                                score -= 10
+                            score -= 10
 
                 return score
+
+    def evaluate_hard(self, board):
+        # Define weights for different scenarios
+        edge_weight = 10
+        center_weight = 5
+        vertical_weight = 4
+        horizontal_weight = 4
+        diagonal_weight = 8
+        block_2_weight = 2
+        block_3_weight = 6
+
+        score = 0
+        num_rows = len(board)
+        num_cols = len(board[0])
+
+        for row in range(num_rows):
+            for col in range(num_cols - 3):
+                window = board[row][col:col + 4]
+                score += self.evaluate_window(window, horizontal_weight, block_2_weight, block_3_weight)
+
+        for col in range(num_cols):
+            for row in range(num_rows - 3):
+                window = [board[row + i][col] for i in range(4)]
+                score += self.evaluate_window(window, vertical_weight, block_2_weight, block_3_weight)
+
+        for row in range(num_rows - 3):
+            for col in range(num_cols - 3):
+                window = [board[row + i][col + i] for i in range(4)]
+                score += self.evaluate_window(window, diagonal_weight, block_2_weight, block_3_weight)
+
+        for row in range(3, num_rows):
+            for col in range(num_cols - 3):
+                window = [board[row - i][col + i] for i in range(4)]
+                score += self.evaluate_window(window, diagonal_weight, block_2_weight, block_3_weight)
+
+        center_col = num_cols // 2
+        center_window = [board[row][center_col] for row in range(num_rows)]
+        center_count = center_window.count('X') - center_window.count('O')
+        score += center_count * center_weight
+
+        edge_window = [board[row][0] for row in range(num_rows)] + [board[row][num_cols - 1] for row in range(num_rows)]
+        edge_count = edge_window.count('X') - edge_window.count('O')
+        score += edge_count * edge_weight
+        return score
+
+    # Helper function to evaluate a window of 4 cells
+    def evaluate_window(self, window, weight, block_2_weight, block_3_weight):
+        score = 0
+        num_X = window.count('X')
+        num_O = window.count('O')
+        num_empty = window.count(' ')
+        if num_X == 4:
+            score += 1000
+        elif num_O == 4:
+            score -= 1000
+        elif num_X == 3 and num_empty == 1:
+            score += block_3_weight
+        elif num_O == 3 and num_empty == 1:
+            score -= block_3_weight
+        elif num_X == 2 and num_empty == 2:
+            score += block_2_weight
+        elif num_O == 2 and num_empty == 2:
+            score -= block_2_weight
+        score += weight * (num_X - num_O)
+        return score
 
     def minimax(self, board, depth, maximizing):
         if depth == 0 or self.game_over:
@@ -174,6 +242,8 @@ class Connect4:
                 return self.evaluate_easy(board), -1
             elif self.level == "medium":
                 return self.evaluate_medium(board), -1
+            elif self.level == "hard":
+                return self.evaluate_hard(board), -1
 
         if maximizing:
             best_score = float('-inf')
@@ -215,7 +285,6 @@ class Connect4:
                 break
 
 
-
 def play_game():
     """
     Main function to play the game
@@ -232,7 +301,7 @@ def play_game():
         elif option == 3:
             game.level = "hard"
         else:
-            "Invalid choice "+str(option)
+            "Invalid choice " + str(option)
     game.print_board()
 
     while not game.game_over:
