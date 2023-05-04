@@ -10,7 +10,10 @@ class Connect4:
         self.board = [[' ' for _ in range(7)] for _ in range(6)]
         self.current_player = 1
         self.game_over = False
-        self.level = ""
+        self.level_player1 = ""
+        self.level_player2 = ""
+        self.style = ""
+
 
     def print_board(self):
         for row in self.board:
@@ -71,9 +74,9 @@ class Connect4:
         return False
 
     # Completely random
-    def rand_ai_move(self):
-        valid_moves = [i for i in range(7) if self.board[0][i] == ' ']
-        return random.choice(valid_moves)
+    # def rand_ai_move(self):
+    #     valid_moves = [i for i in range(7) if self.board[0][i] == ' ']
+    #     return random.choice(valid_moves)
 
     # Extremely simple evaluation that checks for a possible 4 in a row (if it doesn't know what to do place in first
     # possible spot)
@@ -237,14 +240,20 @@ class Connect4:
         return score
 
     def minimax(self, board, depth, maximizing):
-        if depth == 0 or self.game_over:
-            if self.level == "easy":
+        if self.current_player == 1 and (depth == 0 or self.game_over):
+            if self.level_player1 == "easy":
                 return self.evaluate_easy(board), -1
-            elif self.level == "medium":
+            elif self.level_player1 == "medium":
                 return self.evaluate_medium(board), -1
-            elif self.level == "hard":
+            elif self.level_player1 == "hard":
                 return self.evaluate_hard(board), -1
-
+        elif self.current_player == 2 and (depth == 0 or self.game_over):
+            if self.level_player2 == "easy":
+                return self.evaluate_easy(board), -1
+            elif self.level_player2 == "medium":
+                return self.evaluate_medium(board), -1
+            elif self.level_player2 == "hard":
+                return self.evaluate_hard(board), -1
         if maximizing:
             best_score = float('-inf')
             best_column = -1
@@ -291,38 +300,94 @@ def play_game():
     """
     game = Connect4()
     print("Welcome to Connect 4!")
-    while game.level == "":
-        prompt = "Difficulty:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+    while game.style == "":
+        prompt = "Style:" + "\n\t1.Player vs AI" + "\n\t2.AI vs AI\n"
         option = int(input(prompt))
         if option == 1:
-            game.level = "easy"
+            game.style = "pva"
         elif option == 2:
-            game.level = "medium"
-        elif option == 3:
-            game.level = "hard"
+            game.style = "ava"
         else:
             "Invalid choice " + str(option)
-    game.print_board()
 
-    while not game.game_over:
-        if game.current_player == 1:
-            column = game.get_column()
-            game.make_move(column)
-        else:
-            column = game.minimax(game.board, DEPTH_LIMIT, True)
-            game.make_move(column[1])
-
+    if(game.style == "pva"):
+        while game.level_player1 == "":
+            prompt = "Difficulty:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            option = int(input(prompt))
+            if option == 1:
+                game.level_player1 = "easy"
+            elif option == 2:
+                game.level_player1 = "medium"
+            elif option == 3:
+                game.level_player1 = "hard"
+            else:
+                "Invalid choice " + str(option)
         game.print_board()
 
-        if game.check_win():
-            print(f"Player {game.current_player} wins!")
-            game.game_over = True
+        while not game.game_over:
+            if game.current_player == 1:
+                column = game.get_column()
+                game.make_move(column)
+            else:
+                 column = game.minimax(game.board, DEPTH_LIMIT, True)
+                 game.make_move(column[1])
 
-        if all([piece != ' ' for row in game.board for piece in row]):
-            print("Tie game.")
-            game.game_over = True
+            game.print_board()
 
-        game.current_player = 3 - game.current_player
+            if game.check_win():
+                print(f"Player {game.current_player} wins!")
+                game.game_over = True
+
+            if all([piece != ' ' for row in game.board for piece in row]):
+                print("Tie game.")
+                game.game_over = True
+
+            game.current_player = 3 - game.current_player
+
+    elif game.style == "ava":
+        while game.level_player1 == "":
+            prompt = "Difficulty for P1:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            option = int(input(prompt))
+            if option == 1:
+                game.level_player1 = "easy"
+            elif option == 2:
+                game.level_player1 = "medium"
+            elif option == 3:
+                game.level_player1 = "hard"
+            else:
+                "Invalid choice " + str(option)
+        while game.level_player2 == "":
+            prompt = "Difficulty for P2:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            option = int(input(prompt))
+            if option == 1:
+                game.level_player2 = "easy"
+            elif option == 2:
+                game.level_player2 = "medium"
+            elif option == 3:
+                game.level_player2 = "hard"
+            else:
+                "Invalid choice " + str(option)
+        game.print_board()
+
+        while not game.game_over:
+            if game.current_player == 1:
+                column = game.minimax(game.board, DEPTH_LIMIT, True)
+                game.make_move(column[1])
+            else:
+                column = game.minimax(game.board, DEPTH_LIMIT, True)
+                game.make_move(column[1])
+
+            game.print_board()
+
+            if game.check_win():
+                print(f"Player {game.current_player} wins!")
+                game.game_over = True
+
+            if all([piece != ' ' for row in game.board for piece in row]):
+                print("Tie game.")
+                game.game_over = True
+
+            game.current_player = 3 - game.current_player
 
 
 if __name__ == '__main__':
