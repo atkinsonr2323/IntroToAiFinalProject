@@ -311,15 +311,15 @@ def play_game():
             "Invalid choice " + str(option)
 
     if(game.style == "pva"):
-        while game.level_player1 == "":
+        while game.level_player2 == "":
             prompt = "Difficulty:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
             option = int(input(prompt))
             if option == 1:
-                game.level_player1 = "easy"
+                game.level_player2 = "easy"
             elif option == 2:
-                game.level_player1 = "medium"
+                game.level_player2 = "medium"
             elif option == 3:
-                game.level_player1 = "hard"
+                game.level_player2 = "hard"
             else:
                 "Invalid choice " + str(option)
         game.print_board()
