@@ -6,6 +6,13 @@ import tracemalloc
 DEPTH_LIMIT = 6
 
 
+class Colors:
+    P1 = '\033[94m'
+    P2 = '\033[91m'
+    BOARD = '\33[33m'
+    ENDC = '\033[0m'
+
+
 class Connect4:
 
     def __init__(self):
@@ -18,8 +25,8 @@ class Connect4:
 
     def print_board(self):
         for row in self.board:
-            print('|'.join(row))
-        print('+-+-+-+-+-+-+')
+            print(f'{Colors.BOARD}|{Colors.ENDC}'.join(row))
+        print(f'{Colors.BOARD}-+-+-+-+-+-+-{Colors.ENDC}\n')
 
     def get_column(self):
         if self.current_player == 1:
@@ -43,9 +50,9 @@ class Connect4:
         for row in range(5, -1, -1):
             if self.board[row][column] == ' ':
                 if self.current_player == 1:
-                    self.board[row][column] = str("X")
+                    self.board[row][column] = str(f"{Colors.P1}X{Colors.ENDC}")
                 else:
-                    self.board[row][column] = str("O")
+                    self.board[row][column] = str(f"{Colors.P2}O{Colors.ENDC}")
                 return
 
     def check_win(self):
@@ -446,7 +453,8 @@ def play_game():
 
     if game.style == "ava":
         while game.level_player1 == "":
-            prompt = "Difficulty for P1:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            prompt = f"Difficulty for {Colors.P1}P1{Colors.ENDC}:" + "\n\t1.Easy" \
+                     + "\n\t2.Medium" + "\n\t3.Hard\n"
             try:
                 option = int(input(prompt))
                 if option == 1:
@@ -458,7 +466,8 @@ def play_game():
             except ValueError:
                 print('Invalid input. Please enter a number between 1 and 3.')
         while game.level_player2 == "":
-            prompt = "Difficulty for P2:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            prompt = f"Difficulty for {Colors.P2}P2{Colors.ENDC}:" + "\n\t1.Easy" \
+                     + "\n\t2.Medium" + "\n\t3.Hard\n"
             try:
                 option = int(input(prompt))
                 if option == 1:
@@ -530,7 +539,8 @@ def play_game():
 
     elif game.style == "bava":
         while game.level_player1 == "":
-            prompt = "Difficulty for P1:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            prompt = f"Difficulty for {Colors.P1}P1{Colors.ENDC}:" + "\n\t1.Easy" \
+                     + "\n\t2.Medium" + "\n\t3.Hard\n"
             try:
                 option = int(input(prompt))
                 if option == 1:
@@ -542,7 +552,8 @@ def play_game():
             except ValueError:
                 print('Invalid input. Please enter a number between 1 and 3.')
         while game.level_player2 == "":
-            prompt = "Difficulty for P2:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            prompt = f"Difficulty for {Colors.P2}P2{Colors.ENDC}:" + "\n\t1.Easy" \
+                     + "\n\t2.Medium" + "\n\t3.Hard\n"
             try:
                 option = int(input(prompt))
                 if option == 1:
