@@ -302,26 +302,28 @@ def play_game():
     print("Welcome to Connect 4!")
     while game.style == "":
         prompt = "Style:" + "\n\t1.Player vs AI" + "\n\t2.AI vs AI\n"
-        option = int(input(prompt))
-        if option == 1:
-            game.style = "pva"
-        elif option == 2:
-            game.style = "ava"
-        else:
-            "Invalid choice " + str(option)
-
-    if(game.style == "pva"):
-        while game.level_player2 == "":
-            prompt = "Difficulty:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+        try:
             option = int(input(prompt))
             if option == 1:
-                game.level_player2 = "easy"
+                game.style = "pva"
             elif option == 2:
-                game.level_player2 = "medium"
-            elif option == 3:
-                game.level_player2 = "hard"
-            else:
-                "Invalid choice " + str(option)
+                game.style = "ava"
+        except ValueError:
+            print('Invalid input. Please enter either number 1 or 2.')
+
+    if game.style == "pva":
+        while game.level_player2 == "":
+            prompt = "Difficulty:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            try:
+                option = int(input(prompt))
+                if option == 1:
+                    game.level_player2 = "easy"
+                elif option == 2:
+                    game.level_player2 = "medium"
+                elif option == 3:
+                    game.level_player2 = "hard"
+            except ValueError:
+                print('Invalid input. Please enter a number between 1 and 3.')
         game.print_board()
 
         while not game.game_over:
@@ -347,26 +349,28 @@ def play_game():
     elif game.style == "ava":
         while game.level_player1 == "":
             prompt = "Difficulty for P1:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
-            option = int(input(prompt))
-            if option == 1:
-                game.level_player1 = "easy"
-            elif option == 2:
-                game.level_player1 = "medium"
-            elif option == 3:
-                game.level_player1 = "hard"
-            else:
-                "Invalid choice " + str(option)
+            try:
+                option = int(input(prompt))
+                if option == 1:
+                    game.level_player1 = "easy"
+                elif option == 2:
+                    game.level_player1 = "medium"
+                elif option == 3:
+                    game.level_player1 = "hard"
+            except ValueError:
+                print('Invalid input. Please enter a number between 1 and 3.')
         while game.level_player2 == "":
             prompt = "Difficulty for P2:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
-            option = int(input(prompt))
-            if option == 1:
-                game.level_player2 = "easy"
-            elif option == 2:
-                game.level_player2 = "medium"
-            elif option == 3:
-                game.level_player2 = "hard"
-            else:
-                "Invalid choice " + str(option)
+            try:
+                option = int(input(prompt))
+                if option == 1:
+                    game.level_player2 = "easy"
+                elif option == 2:
+                    game.level_player2 = "medium"
+                elif option == 3:
+                    game.level_player2 = "hard"
+            except ValueError:
+                print('Invalid input. Please enter a number between 1 and 3.')
         game.print_board()
 
         while not game.game_over:
