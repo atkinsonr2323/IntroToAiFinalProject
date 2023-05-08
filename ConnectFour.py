@@ -1,5 +1,7 @@
 import math
 import random
+import time
+import tracemalloc
 
 DEPTH_LIMIT = 6
 
@@ -13,7 +15,6 @@ class Connect4:
         self.level_player1 = ""
         self.level_player2 = ""
         self.style = ""
-
 
     def print_board(self):
         for row in self.board:
@@ -239,6 +240,98 @@ class Connect4:
         score += weight * (num_X - num_O)
         return score
 
+    def benchmark_evaluate(self, evaluation_method, board):
+        """
+        Benchmarking method for measuring time and memory usage of an evaluation method argument.
+
+        Returns the score of the evaluation method, elapsed time in seconds, and peak traced memory
+        block size in bytes.
+        """
+        start_time = time.perf_counter()
+        tracemalloc.start()
+
+        score = evaluation_method(board)
+
+        memory_usage = tracemalloc.get_traced_memory()
+        tracemalloc.stop()
+        end_time = time.perf_counter()
+        elapsed_time = end_time - start_time
+
+        return score, elapsed_time, memory_usage[1]
+
+    def benchmark_evaluation_p1(self, board):
+        """
+        Helper method for selecting correct evaluation method when benchmarking player one's turn.
+
+        Returns the score from the evaluation method, the elapsed time in seconds, the peak traced
+        memory block size in bytes, and a placeholder for the 'best' column.
+        """
+        if self.level_player1 == "easy":
+            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_easy, board)
+            return score, elapsed, memory, -1
+        elif self.level_player1 == "medium":
+            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_medium, board)
+            return score, elapsed, memory, -1
+        elif self.level_player1 == "hard":
+            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_hard, board)
+            return score, elapsed, memory, -1
+
+    def benchmark_evaluation_p2(self, board):
+        """
+        Helper method for selecting correct evaluation method when benchmarking player two's turn.
+
+        Returns the score from the evaluation method, the elapsed time in seconds, the peak traced
+        memory block size in bytes, and a placeholder for the 'best' column.
+        """
+        if self.level_player2 == "easy":
+            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_easy, board)
+            return score, elapsed, memory, -1
+        elif self.level_player2 == "medium":
+            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_medium, board)
+            return score, elapsed, memory, -1
+        elif self.level_player2 == "hard":
+            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_hard, board)
+            return score, elapsed, memory, -1
+
+    def benchmarked_minimax(self, board, depth, maximizing):
+        """
+        Minimax algorithm with time and memory benchmarking
+        """
+        if self.current_player == 1 and (depth == 0 or self.game_over):
+            return self.benchmark_evaluation_p1(board)
+        elif self.current_player == 2 and (depth == 0 or self.game_over):
+            return self.benchmark_evaluation_p2(board)
+        if maximizing:
+            best_score = float('-inf')
+            elapsed = 0
+            memory = 0
+            best_column = -1
+            for col in range(7):
+                if board[0][col] == ' ':
+                    row = self.get_next_open_row(board, col)
+                    board[row][col] = 'X'
+                    score, elapsed, memory, _ = self.benchmarked_minimax(board, depth - 1, False)
+                    board[row][col] = ' '
+                    if score > best_score:
+                        best_score = score
+                        best_column = col
+            return best_score, elapsed, memory, best_column
+        else:
+            best_score = float('inf')
+            elapsed = 0
+            memory = 0
+            best_column = -1
+            for col in range(7):
+                if board[0][col] == ' ':
+                    row = self.get_next_open_row(board, col)
+                    board[row][col] = 'O'
+                    score, elapsed, memory, _ = self.benchmarked_minimax(board, depth - 1, True)
+                    board[row][col] = ' '
+                    if score < best_score:
+                        best_score = score
+                        best_column = col
+            return best_score, elapsed, memory, best_column
+
     def minimax(self, board, depth, maximizing):
         if self.current_player == 1 and (depth == 0 or self.game_over):
             if self.level_player1 == "easy":
@@ -301,15 +394,20 @@ def play_game():
     game = Connect4()
     print("Welcome to Connect 4!")
     while game.style == "":
-        prompt = "Style:" + "\n\t1.Player vs AI" + "\n\t2.AI vs AI\n"
+        prompt = "Style:" + "\n\t1.Player vs AI" + "\n\t2.AI vs AI" \
+                 + "\n\t3.Benchmarked Player vs AI" + "\n\t4.Benchmarked AI vs AI\n"
         try:
             option = int(input(prompt))
             if option == 1:
                 game.style = "pva"
-            elif option == 2:
+            if option == 2:
                 game.style = "ava"
+            if option == 3:
+                game.style = "bpva"
+            elif option == 4:
+                game.style = "bava"
         except ValueError:
-            print('Invalid input. Please enter either number 1 or 2.')
+            print('Invalid input. Please enter a number between 1 and 4.')
 
     if game.style == "pva":
         while game.level_player2 == "":
@@ -331,8 +429,8 @@ def play_game():
                 column = game.get_column()
                 game.make_move(column)
             else:
-                 column = game.minimax(game.board, DEPTH_LIMIT, True)
-                 game.make_move(column[1])
+                column = game.minimax(game.board, DEPTH_LIMIT, True)
+                game.make_move(column[1])
 
             game.print_board()
 
@@ -346,7 +444,7 @@ def play_game():
 
             game.current_player = 3 - game.current_player
 
-    elif game.style == "ava":
+    if game.style == "ava":
         while game.level_player1 == "":
             prompt = "Difficulty for P1:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
             try:
@@ -380,6 +478,94 @@ def play_game():
             else:
                 column = game.minimax(game.board, DEPTH_LIMIT, True)
                 game.make_move(column[1])
+
+            game.print_board()
+
+            if game.check_win():
+                print(f"Player {game.current_player} wins!")
+                game.game_over = True
+
+            if all([piece != ' ' for row in game.board for piece in row]):
+                print("Tie game.")
+                game.game_over = True
+
+            game.current_player = 3 - game.current_player
+
+    if game.style == "bpva":
+        while game.level_player2 == "":
+            prompt = "Difficulty:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            try:
+                option = int(input(prompt))
+                if option == 1:
+                    game.level_player2 = "easy"
+                elif option == 2:
+                    game.level_player2 = "medium"
+                elif option == 3:
+                    game.level_player2 = "hard"
+            except ValueError:
+                print('Invalid input. Please enter a number between 1 and 3.')
+        game.print_board()
+
+        while not game.game_over:
+            if game.current_player == 1:
+                column = game.get_column()
+                game.make_move(column)
+            else:
+                column = game.benchmarked_minimax(game.board, DEPTH_LIMIT, True)
+                print(f'Time elapsed: {column[1]}')
+                print(f'Memory usage: {column[2]}')
+                game.make_move(column[3])
+
+            game.print_board()
+
+            if game.check_win():
+                print(f"Player {game.current_player} wins!")
+                game.game_over = True
+
+            if all([piece != ' ' for row in game.board for piece in row]):
+                print("Tie game.")
+                game.game_over = True
+
+            game.current_player = 3 - game.current_player
+
+    elif game.style == "bava":
+        while game.level_player1 == "":
+            prompt = "Difficulty for P1:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            try:
+                option = int(input(prompt))
+                if option == 1:
+                    game.level_player1 = "easy"
+                elif option == 2:
+                    game.level_player1 = "medium"
+                elif option == 3:
+                    game.level_player1 = "hard"
+            except ValueError:
+                print('Invalid input. Please enter a number between 1 and 3.')
+        while game.level_player2 == "":
+            prompt = "Difficulty for P2:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            try:
+                option = int(input(prompt))
+                if option == 1:
+                    game.level_player2 = "easy"
+                elif option == 2:
+                    game.level_player2 = "medium"
+                elif option == 3:
+                    game.level_player2 = "hard"
+            except ValueError:
+                print('Invalid input. Please enter a number between 1 and 3.')
+        game.print_board()
+
+        while not game.game_over:
+            if game.current_player == 1:
+                column = game.benchmarked_minimax(game.board, DEPTH_LIMIT, True)
+                print(f'Time elapsed: {column[1]}')
+                print(f'Memory usage: {column[2]}')
+                game.make_move(column[3])
+            else:
+                column = game.benchmarked_minimax(game.board, DEPTH_LIMIT, True)
+                print(f'Time elapsed: {column[1]}')
+                print(f'Memory usage: {column[2]}')
+                game.make_move(column[3])
 
             game.print_board()
 
