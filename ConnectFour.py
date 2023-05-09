@@ -6,13 +6,15 @@ import tracemalloc
 DEPTH_LIMIT = 6
 
 
-# class Colors:
-#     P1 = '\033[94m'
-#     P2 = '\033[91m'
-#     BOARD = '\33[33m'
-#     ENDC = '\033[0m'
 
+class Colors:
+    P1 = '\033[94m'
+    P2 = '\033[91m'
+    BOARD = '\33[33m'
+    ENDC = '\033[0m'
 
+x_mark = str(f"{Colors.P1}X{Colors.ENDC}")
+o_mark = str(f"{Colors.P2}O{Colors.ENDC}")
 class Connect4:
 
     def __init__(self):
@@ -25,10 +27,10 @@ class Connect4:
 
     def print_board(self):
         for row in self.board:
-            # print(f'{Colors.BOARD}|{Colors.ENDC}'.join(row))
-            print('|'.join(row))
-        # print(f'{Colors.BOARD}-+-+-+-+-+-+-{Colors.ENDC}\n')
-        print('-+-+-+-+-+-+-\n')
+            print(f'{Colors.BOARD}|{Colors.ENDC}'.join(row))
+            #print('|'.join(row))
+        print(f'{Colors.BOARD}-+-+-+-+-+-+-{Colors.ENDC}\n')
+        #print('-+-+-+-+-+-+-\n')
 
     def get_column(self):
         if self.current_player == 1:
@@ -52,11 +54,11 @@ class Connect4:
         for row in range(5, -1, -1):
             if self.board[row][column] == ' ':
                 if self.current_player == 1:
-                    # self.board[row][column] = str(f"{Colors.P1}X{Colors.ENDC}")
-                    self.board[row][column] = str("X")
+                     self.board[row][column] = str(f"{Colors.P1}X{Colors.ENDC}")
+                    #self.board[row][column] = str("X")
                 else:
-                    # self.board[row][column] = str(f"{Colors.P2}O{Colors.ENDC}")
-                    self.board[row][column] = str("O")
+                     self.board[row][column] = str(f"{Colors.P2}O{Colors.ENDC}")
+                    #self.board[row][column] = str("O")
                 return
 
     def check_win(self):
@@ -105,36 +107,36 @@ class Connect4:
         for row in board:
             for i in range(len(row) - 3):
                 if row[i] == row[i + 1] == row[i + 2] == row[i + 3] and row[i] != ' ':
-                    if row[i] == 'O':
+                    if row[i] == o_mark:
                         return -100
                     else:
                         return 100
-                if row[i:i + 4].count('O') == 3 and row[i:i + 4].count(' ') == 1:
+                if row[i:i + 4].count(o_mark) == 3 and row[i:i + 4].count(' ') == 1:
                     score += 50
-                elif row[i:i + 4].count('X') == 3 and row[i:i + 4].count(' ') == 1:
+                elif row[i:i + 4].count(x_mark) == 3 and row[i:i + 4].count(' ') == 1:
                     score -= 50
-                elif row[i:i + 4].count('O') == 2 and row[i:i + 4].count(' ') == 2:
+                elif row[i:i + 4].count(o_mark) == 2 and row[i:i + 4].count(' ') == 2:
                     score += 10
-                elif row[i:i + 4].count('X') == 2 and row[i:i + 4].count(' ') == 2:
+                elif row[i:i + 4].count(x_mark) == 2 and row[i:i + 4].count(' ') == 2:
                     score -= 10
 
         for col in range(len(board[0])):
             for i in range(len(board) - 3):
                 if board[i][col] == board[i + 1][col] == board[i + 2][col] == board[i + 3][col] and board[i][col] != ' ':
-                    if board[i][col] == 'O':
+                    if board[i][col] == o_mark:
                         return -100
                     else:
                         return 100
-                if [board[j][col] for j in range(i, i + 4)].count('O') == 3 and [board[j][col] for j in
+                if [board[j][col] for j in range(i, i + 4)].count(o_mark) == 3 and [board[j][col] for j in
                                                                                  range(i, i + 4)].count(' ') == 1:
                     score += 50
-                elif [board[j][col] for j in range(i, i + 4)].count('X') == 3 and [board[j][col] for j in
+                elif [board[j][col] for j in range(i, i + 4)].count(x_mark) == 3 and [board[j][col] for j in
                                                                                    range(i, i + 4)].count(' ') == 1:
                     score -= 50
-                elif [board[j][col] for j in range(i, i + 4)].count('O') == 2 and [board[j][col] for j in
+                elif [board[j][col] for j in range(i, i + 4)].count(o_mark) == 2 and [board[j][col] for j in
                                                                                    range(i, i + 4)].count(' ') == 2:
                     score += 10
-                elif [board[j][col] for j in range(i, i + 4)].count('X') == 2 and [board[j][col] for j in
+                elif [board[j][col] for j in range(i, i + 4)].count(x_mark) == 2 and [board[j][col] for j in
                                                                                    range(i, i + 4)].count(' ') == 2:
                     score -= 10
 
@@ -142,20 +144,20 @@ class Connect4:
             for col in range(len(board[0]) - 3):
                 if board[row][col] == board[row + 1][col + 1] == board[row + 2][col + 2] == board[row + 3][col + 3] and \
                         board[row][col] != ' ':
-                    if board[row][col] == 'O':
+                    if board[row][col] == o_mark:
                         return -100
                     else:
                         return 100
-                if [board[row + j][col + j] for j in range(4)].count('O') == 3 and [board[row + j][col + j] for j in
+                if [board[row + j][col + j] for j in range(4)].count(o_mark) == 3 and [board[row + j][col + j] for j in
                                                                                     range(4)].count(' ') == 1:
                     score += 50
-                elif [board[row + j][col + j] for j in range(4)].count('X') == 3 and [board[row + j][col + j] for j
+                elif [board[row + j][col + j] for j in range(4)].count(x_mark) == 3 and [board[row + j][col + j] for j
                                                                                       in range(4)].count(' ') == 1:
                     score -= 50
-                elif [board[row + j][col + j] for j in range(4)].count('O') == 2 and [board[row + j][col + j] for j in
+                elif [board[row + j][col + j] for j in range(4)].count(o_mark) == 2 and [board[row + j][col + j] for j in
                                                                                       range(4)].count(' ') == 2:
                     score += 10
-                elif [board[row + j][col + j] for j in range(4)].count('X') == 2 and [board[row + j][col + j] for j in
+                elif [board[row + j][col + j] for j in range(4)].count(x_mark) == 2 and [board[row + j][col + j] for j in
                                                                                       range(4)].count(' ') == 2:
                     score -= 10
                 for row in range(3, len(board)):
@@ -163,23 +165,23 @@ class Connect4:
                         if board[row][col] == board[row - 1][col + 1] == board[row - 2][col + 2] == board[row - 3][
                             col + 3] and \
                                 board[row][col] != ' ':
-                            if board[row][col] == 'O':
+                            if board[row][col] == o_mark:
                                 return -100
                             else:
                                 return 100
-                        if [board[row - j][col + j] for j in range(4)].count('O') == 3 and [board[row - j][col + j] for
+                        if [board[row - j][col + j] for j in range(4)].count(o_mark) == 3 and [board[row - j][col + j] for
                                                                                             j in
                                                                                             range(4)].count(' ') == 1:
                             score += 50
-                        elif [board[row - j][col + j] for j in range(4)].count('X') == 3 and [board[row - j][col + j]
+                        elif [board[row - j][col + j] for j in range(4)].count(x_mark) == 3 and [board[row - j][col + j]
                                                                                               for j in
                                                                                               range(4)].count(' ') == 1:
                             score -= 50
-                        elif [board[row - j][col + j] for j in range(4)].count('O') == 2 and [board[row - j][col + j]
+                        elif [board[row - j][col + j] for j in range(4)].count(o_mark) == 2 and [board[row - j][col + j]
                                                                                               for j in
                                                                                               range(4)].count(' ') == 2:
                             score += 10
-                        elif [board[row - j][col + j] for j in range(4)].count('X') == 2 and [board[row - j][col + j]
+                        elif [board[row - j][col + j] for j in range(4)].count(x_mark) == 2 and [board[row - j][col + j]
                                                                                               for j in
                                                                                               range(4)].count(' ') == 2:
                             score -= 10
@@ -222,19 +224,19 @@ class Connect4:
 
         center_col = num_cols // 2
         center_window = [board[row][center_col] for row in range(num_rows)]
-        center_count = center_window.count('X') - center_window.count('O')
+        center_count = center_window.count(x_mark) - center_window.count(o_mark)
         score += center_count * center_weight
 
         edge_window = [board[row][0] for row in range(num_rows)] + [board[row][num_cols - 1] for row in range(num_rows)]
-        edge_count = edge_window.count('X') - edge_window.count('O')
+        edge_count = edge_window.count(x_mark) - edge_window.count(o_mark)
         score += edge_count * edge_weight
         return score
 
     # Helper function to evaluate a window of 4 cells
     def evaluate_window(self, window, weight, block_2_weight, block_3_weight):
         score = 0
-        num_X = window.count('X')
-        num_O = window.count('O')
+        num_X = window.count(x_mark)
+        num_O = window.count(o_mark)
         num_empty = window.count(' ')
         if num_X == 4:
             score += 1000
@@ -320,7 +322,7 @@ class Connect4:
             for col in range(7):
                 if board[0][col] == ' ':
                     row = self.get_next_open_row(board, col)
-                    board[row][col] = 'X'
+                    board[row][col] = x_mark
                     score, elapsed, memory, _ = self.benchmarked_minimax(board, depth - 1, False)
                     board[row][col] = ' '
                     if score > best_score:
@@ -335,7 +337,7 @@ class Connect4:
             for col in range(7):
                 if board[0][col] == ' ':
                     row = self.get_next_open_row(board, col)
-                    board[row][col] = 'O'
+                    board[row][col] = o_mark
                     score, elapsed, memory, _ = self.benchmarked_minimax(board, depth - 1, True)
                     board[row][col] = ' '
                     if score < best_score:
@@ -364,7 +366,7 @@ class Connect4:
             for col in range(7):
                 if board[0][col] == ' ':
                     row = self.get_next_open_row(board, col)
-                    board[row][col] = 'X'
+                    board[row][col] = x_mark
                     score, _ = self.minimax(board, depth - 1, False)
                     board[row][col] = ' '
                     if score > best_score:
@@ -377,7 +379,7 @@ class Connect4:
             for col in range(7):
                 if board[0][col] == ' ':
                     row = self.get_next_open_row(board, col)
-                    board[row][col] = 'O'
+                    board[row][col] = o_mark
                     score, _ = self.minimax(board, depth - 1, True)
                     board[row][col] = ' '
                     if score < best_score:
