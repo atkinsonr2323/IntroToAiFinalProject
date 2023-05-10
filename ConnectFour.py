@@ -3,7 +3,7 @@ import random
 import time
 import tracemalloc
 
-DEPTH_LIMIT = 6
+DEPTH_LIMIT = 4
 
 
 
