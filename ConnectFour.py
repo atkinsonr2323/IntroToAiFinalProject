@@ -28,9 +28,7 @@ class Connect4:
     def print_board(self):
         for row in self.board:
             print(f'{Colors.BOARD}|{Colors.ENDC}'.join(row))
-            #print('|'.join(row))
         print(f'{Colors.BOARD}-+-+-+-+-+-+-{Colors.ENDC}\n')
-        #print('-+-+-+-+-+-+-\n')
 
     def get_column(self):
         if self.current_player == 1:
@@ -55,10 +53,8 @@ class Connect4:
             if self.board[row][column] == ' ':
                 if self.current_player == 1:
                      self.board[row][column] = str(f"{Colors.P1}X{Colors.ENDC}")
-                    #self.board[row][column] = str("X")
                 else:
                      self.board[row][column] = str(f"{Colors.P2}O{Colors.ENDC}")
-                    #self.board[row][column] = str("O")
                 return
 
     def check_win(self):
@@ -87,14 +83,11 @@ class Connect4:
 
         return False
 
-    # Completely random
-    # def rand_ai_move(self):
-    #     valid_moves = [i for i in range(7) if self.board[0][i] == ' ']
-    #     return random.choice(valid_moves)
+    def get_random_column(self):
+        available_columns = [col for col in range(7) if self.board[0][col] == ' ']
+        return random.choice(available_columns) if available_columns else None
 
-    # Extremely simple evaluation that checks for a possible 4 in a row (if it doesn't know what to do place in first
-    # possible spot)
-    def evaluate_easy(self, board):
+    def evaluate_simple(self, board):
         if self.current_player == 2 and self.check_win():
             return 100
         elif self.current_player == 1 and self.check_win():
@@ -102,7 +95,7 @@ class Connect4:
         return 0
 
     # Checks for wins but also takes into account 2 in a row and 3 in a rows as well.
-    def evaluate_medium(self, board):
+    def evaluate_block_pref(self, board):
         score = 0
         for row in board:
             for i in range(len(row) - 3):
@@ -188,7 +181,7 @@ class Connect4:
 
                 return score
 
-    def evaluate_hard(self, board):
+    def evaluate_loc_pref(self, board):
         # Define weights for different scenarios
         edge_weight = 10
         center_weight = 5
@@ -279,14 +272,14 @@ class Connect4:
         Returns the score from the evaluation method, the elapsed time in seconds, the peak traced
         memory block size in bytes, and a placeholder for the 'best' column.
         """
-        if self.level_player1 == "easy":
-            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_easy, board)
+        if self.level_player1 == "simple":
+            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_simple, board)
             return score, elapsed, memory, -1
-        elif self.level_player1 == "medium":
-            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_medium, board)
+        elif self.level_player1 == "block":
+            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_block_pref, board)
             return score, elapsed, memory, -1
-        elif self.level_player1 == "hard":
-            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_hard, board)
+        elif self.level_player1 == "loc":
+            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_loc_pref, board)
             return score, elapsed, memory, -1
 
     def benchmark_evaluation_p2(self, board):
@@ -296,20 +289,22 @@ class Connect4:
         Returns the score from the evaluation method, the elapsed time in seconds, the peak traced
         memory block size in bytes, and a placeholder for the 'best' column.
         """
-        if self.level_player2 == "easy":
-            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_easy, board)
+        if self.level_player2 == "simple":
+            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_simple, board)
             return score, elapsed, memory, -1
-        elif self.level_player2 == "medium":
-            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_medium, board)
+        elif self.level_player2 == "block":
+            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_block_pref, board)
             return score, elapsed, memory, -1
-        elif self.level_player2 == "hard":
-            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_hard, board)
+        elif self.level_player2 == "loc":
+            score, elapsed, memory = self.benchmark_evaluate(self.evaluate_loc_pref, board)
             return score, elapsed, memory, -1
 
     def benchmarked_minimax(self, board, depth, maximizing):
         """
         Minimax algorithm with time and memory benchmarking
         """
+        total_mem = 0
+        total_time = 0
         if self.current_player == 1 and (depth == 0 or self.game_over):
             return self.benchmark_evaluation_p1(board)
         elif self.current_player == 2 and (depth == 0 or self.game_over):
@@ -324,6 +319,8 @@ class Connect4:
                     row = self.get_next_open_row(board, col)
                     board[row][col] = x_mark
                     score, elapsed, memory, _ = self.benchmarked_minimax(board, depth - 1, False)
+                    total_time += elapsed
+                    total_mem += memory
                     board[row][col] = ' '
                     if score > best_score:
                         best_score = score
@@ -339,27 +336,29 @@ class Connect4:
                     row = self.get_next_open_row(board, col)
                     board[row][col] = o_mark
                     score, elapsed, memory, _ = self.benchmarked_minimax(board, depth - 1, True)
+                    total_time += elapsed
+                    total_mem += memory
                     board[row][col] = ' '
                     if score < best_score:
                         best_score = score
                         best_column = col
-            return best_score, elapsed, memory, best_column
+            return best_score, total_time, total_mem, best_column
 
     def minimax(self, board, depth, maximizing):
         if self.current_player == 1 and (depth == 0 or self.game_over):
-            if self.level_player1 == "easy":
-                return self.evaluate_easy(board), -1
-            elif self.level_player1 == "medium":
-                return self.evaluate_medium(board), -1
-            elif self.level_player1 == "hard":
-                return self.evaluate_hard(board), -1
+            if self.level_player1 == "simple":
+                return self.evaluate_simple(board), -1
+            elif self.level_player1 == "block":
+                return self.evaluate_block_pref(board), -1
+            elif self.level_player1 == "loc":
+                return self.evaluate_loc_pref(board), -1
         elif self.current_player == 2 and (depth == 0 or self.game_over):
-            if self.level_player2 == "easy":
-                return self.evaluate_easy(board), -1
-            elif self.level_player2 == "medium":
-                return self.evaluate_medium(board), -1
-            elif self.level_player2 == "hard":
-                return self.evaluate_hard(board), -1
+            if self.level_player2 == "simple":
+                return self.evaluate_simple(board), -1
+            elif self.level_player2 == "block":
+                return self.evaluate_block_pref(board), -1
+            elif self.level_player2 == "loc":
+                return self.evaluate_loc_pref(board), -1
         if maximizing:
             best_score = float('-inf')
             best_column = -1
@@ -408,7 +407,7 @@ def play_game():
     print("Welcome to Connect 4!")
     while game.style == "":
         prompt = "Style:" + "\n\t1.Player vs AI" + "\n\t2.AI vs AI" \
-                 + "\n\t3.Benchmarked Player vs AI" + "\n\t4.Benchmarked AI vs AI\n"
+                 + "\n\t3.Benchmarked Player vs AI" + "\n\t4.Benchmarked AI vs AI" + "\n\t5. Ai Vs Random\n"
         try:
             option = int(input(prompt))
             if option == 1:
@@ -417,22 +416,24 @@ def play_game():
                 game.style = "ava"
             if option == 3:
                 game.style = "bpva"
-            elif option == 4:
+            if option == 4:
                 game.style = "bava"
+            if option == 5:
+                game.style = "avr"
         except ValueError:
             print('Invalid input. Please enter a number between 1 and 4.')
 
     if game.style == "pva":
         while game.level_player2 == "":
-            prompt = "Difficulty:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            prompt = "Difficulty:" + "\n\t1.Simple" + "\n\t2.Block Preference" + "\n\t3.Location Preference\n"
             try:
                 option = int(input(prompt))
                 if option == 1:
-                    game.level_player2 = "easy"
+                    game.level_player2 = "simple"
                 elif option == 2:
-                    game.level_player2 = "medium"
+                    game.level_player2 = "block"
                 elif option == 3:
-                    game.level_player2 = "hard"
+                    game.level_player2 = "loc"
             except ValueError:
                 print('Invalid input. Please enter a number between 1 and 3.')
         game.print_board()
@@ -459,29 +460,29 @@ def play_game():
 
     if game.style == "ava":
         while game.level_player1 == "":
-            prompt = f"Difficulty for P1:" + "\n\t1.Easy" \
-                     + "\n\t2.Medium" + "\n\t3.Hard\n"
+            prompt = f"Difficulty for P1:" + "\n\t1.Simple" \
+                     + "\n\t2.Block Preference" + "\n\t3.Location Preference\n"
             try:
                 option = int(input(prompt))
                 if option == 1:
-                    game.level_player1 = "easy"
+                    game.level_player1 = "simple"
                 elif option == 2:
-                    game.level_player1 = "medium"
+                    game.level_player1 = "block"
                 elif option == 3:
-                    game.level_player1 = "hard"
+                    game.level_player1 = "loc"
             except ValueError:
                 print('Invalid input. Please enter a number between 1 and 3.')
         while game.level_player2 == "":
-            prompt = f"Difficulty for P2:" + "\n\t1.Easy" \
-                     + "\n\t2.Medium" + "\n\t3.Hard\n"
+            prompt = f"Difficulty for P2:" + "\n\t1.Simple" \
+                     + "\n\t2.Block Preference" + "\n\t3.Location Preference\n"
             try:
                 option = int(input(prompt))
                 if option == 1:
-                    game.level_player2 = "easy"
+                    game.level_player2 = "simple"
                 elif option == 2:
-                    game.level_player2 = "medium"
+                    game.level_player2 = "block"
                 elif option == 3:
-                    game.level_player2 = "hard"
+                    game.level_player2 = "loc"
             except ValueError:
                 print('Invalid input. Please enter a number between 1 and 3.')
         game.print_board()
@@ -508,15 +509,15 @@ def play_game():
 
     if game.style == "bpva":
         while game.level_player2 == "":
-            prompt = "Difficulty:" + "\n\t1.Easy" + "\n\t2.Medium" + "\n\t3.Hard\n"
+            prompt = "Difficulty:" + "\n\t1.Simple" + "\n\t2.Block Preference" + "\n\t3.Location Preference\n"
             try:
                 option = int(input(prompt))
                 if option == 1:
-                    game.level_player2 = "easy"
+                    game.level_player2 = "simple"
                 elif option == 2:
-                    game.level_player2 = "medium"
+                    game.level_player2 = "block"
                 elif option == 3:
-                    game.level_player2 = "hard"
+                    game.level_player2 = "loc"
             except ValueError:
                 print('Invalid input. Please enter a number between 1 and 3.')
         game.print_board()
@@ -526,8 +527,10 @@ def play_game():
                 column = game.get_column()
                 game.make_move(column)
             else:
+                start_time = time.perf_counter()
                 column = game.benchmarked_minimax(game.board, DEPTH_LIMIT, True)
-                print(f'Time elapsed: {column[1]}')
+                end_time = time.perf_counter()
+                print(f'Time elapsed: {end_time-start_time}')
                 print(f'Memory usage: {column[2]}')
                 game.make_move(column[3])
 
@@ -543,46 +546,86 @@ def play_game():
 
             game.current_player = 3 - game.current_player
 
-    elif game.style == "bava":
+    if game.style == "bava":
         while game.level_player1 == "":
-            prompt = "Difficulty for P1:" + "\n\t1.Easy" \
-                     + "\n\t2.Medium" + "\n\t3.Hard\n"
+            prompt = "Difficulty for P1:" + "\n\t1.Simple" \
+                     + "\n\t2.Block Preference" + "\n\t3.Location Preference\n"
             try:
                 option = int(input(prompt))
                 if option == 1:
-                    game.level_player1 = "easy"
+                    game.level_player1 = "simple"
                 elif option == 2:
-                    game.level_player1 = "medium"
+                    game.level_player1 = "block"
                 elif option == 3:
-                    game.level_player1 = "hard"
+                    game.level_player1 = "loc"
             except ValueError:
                 print('Invalid input. Please enter a number between 1 and 3.')
         while game.level_player2 == "":
-            prompt = f"Difficulty for P2:" + "\n\t1.Easy" \
-                     + "\n\t2.Medium" + "\n\t3.Hard\n"
+            prompt = f"Difficulty for P2:" + "\n\t1.Simple" \
+                     + "\n\t2.Block Preference" + "\n\t3.Location Preference\n"
             try:
                 option = int(input(prompt))
                 if option == 1:
-                    game.level_player2 = "easy"
+                    game.level_player2 = "simple"
                 elif option == 2:
-                    game.level_player2 = "medium"
+                    game.level_player2 = "block"
                 elif option == 3:
-                    game.level_player2 = "hard"
+                    game.level_player2 = "loc"
             except ValueError:
                 print('Invalid input. Please enter a number between 1 and 3.')
         game.print_board()
 
         while not game.game_over:
             if game.current_player == 1:
+                start_time = time.perf_counter()
                 column = game.benchmarked_minimax(game.board, DEPTH_LIMIT, True)
-                print(f'Time elapsed: {column[1]}')
+                end_time = time.perf_counter()
+                print(f'Time elapsed: {end_time-start_time}')
                 print(f'Memory usage: {column[2]}')
                 game.make_move(column[3])
             else:
+                start_time = time.perf_counter()
                 column = game.benchmarked_minimax(game.board, DEPTH_LIMIT, True)
-                print(f'Time elapsed: {column[1]}')
+                end_time = time.perf_counter()
+                print(f'Time elapsed: {end_time-start_time}')
                 print(f'Memory usage: {column[2]}')
                 game.make_move(column[3])
+
+            game.print_board()
+
+            if game.check_win():
+                print(f"Player {game.current_player} wins!")
+                game.game_over = True
+
+            if all([piece != ' ' for row in game.board for piece in row]):
+                print("Tie game.")
+                game.game_over = True
+
+            game.current_player = 3 - game.current_player
+    if game.style == "avr":
+        while game.level_player1 == "":
+            prompt = f"Difficulty for P1:" + "\n\t1.Simple" \
+                     + "\n\t2.Block Preference" + "\n\t3.Location Preference\n"
+            try:
+                option = int(input(prompt))
+                if option == 1:
+                    game.level_player1 = "simple"
+                elif option == 2:
+                    game.level_player1 = "block"
+                elif option == 3:
+                    game.level_player1 = "loc"
+            except ValueError:
+                print('Invalid input. Please enter a number between 1 and 3.')
+
+        game.print_board()
+
+        while not game.game_over:
+            if game.current_player == 1:
+                column = game.minimax(game.board, DEPTH_LIMIT, True)
+                game.make_move(column[1])
+            else:
+                column = game.get_random_column()
+                game.make_move(column)
 
             game.print_board()
 
