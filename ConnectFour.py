@@ -6,15 +6,17 @@ import tracemalloc
 DEPTH_LIMIT = 6
 
 
-
 class Colors:
     P1 = '\033[94m'
     P2 = '\033[91m'
     BOARD = '\33[33m'
     ENDC = '\033[0m'
 
+
 x_mark = str(f"{Colors.P1}X{Colors.ENDC}")
 o_mark = str(f"{Colors.P2}O{Colors.ENDC}")
+
+
 class Connect4:
 
     def __init__(self):
